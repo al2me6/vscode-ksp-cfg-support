@@ -2,7 +2,7 @@
   "name": "ksp-cfg-support",
   "displayName": "KSP CFG Support",
   "description": "Syntax highlighting for Kerbal Space Program config files",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "al2me6",
   "engines": {
     "vscode": "^1.33.0"

@@ -2,7 +2,7 @@
 
 Provides support for [Kerbal Space Program](https://kerbalspaceprogram.com) configuration files.
 
-![syntax highlighting example](img/examples.png)
+![syntax highlighting example](img/example.png)
 
 ## Supported Features
 
