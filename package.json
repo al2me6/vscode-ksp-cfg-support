@@ -1,0 +1,56 @@
+{
+  "name": "ksp-cfg-support",
+  "displayName": "KSP CFG Support",
+  "description": "Syntax highlighting for Kerbal Space Program config files",
+  "version": "0.1.0",
+  "publisher": "al2me6",
+  "engines": {
+    "vscode": "^1.33.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/al2me6/vscode-ksp-cfg-support"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "Kerbal Space Program",
+    "KSP",
+    "ksp",
+    "Kerbal",
+    "ksp",
+    "cfg",
+    "sfs",
+    "craft",
+    "modulemanager"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "ksp-cfg",
+        "aliases": [
+          "KSP Config",
+          "ksp-cfg"
+        ],
+        "extensions": [
+          ".cfg",
+          ".craft",
+          ".sfs"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ksp-cfg",
+        "aliases": [
+          "KSP Config",
+          "ksp-cfg"
+        ],
+        "scopeName": "text.ksp.cfg",
+        "path": "./syntaxes/ksp-cfg.tmLanguage.json"
+      }
+    ]
+  }
+}

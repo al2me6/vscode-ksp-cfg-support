@@ -1,0 +1,177 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "KSP Config",
+  "scopeName": "text.ksp.cfg",
+  "fileTypes": ["cfg", "craft", "sfs"],
+  "patterns": [
+    { "include": "#block" },
+    { "include": "#comment" },
+    { "include": "#operator" },
+    { "include": "#number-literal" },
+    { "include": "#guid" },
+    { "include": "#hex-color" },
+    { "include": "#boolean-literal" },
+    { "include": "#i18n-string" },
+    { "include": "#variable-expression" },
+    { "include": "#key" },
+    { "include": "#node-qualifier" },
+    { "include": "#node" },
+    { "include": "#node-argument" },
+    { "include": "#string-literal" }
+  ],
+
+  "repository": {
+    "block": {
+      "begin": "{",
+      "end": "}",
+      "patterns": [{ "include": "$self" }]
+    },
+    "comment": {
+      "patterns": [
+        {
+          "match": "//.*",
+          "name": "comment"
+        }
+      ]
+    },
+
+    "operator": {
+      "patterns": [
+        {
+          "match": "[@\\$~%\\?!#\\|&+\\-\\*/=]",
+          "name": "keyword.operator"
+        }
+      ]
+    },
+
+    "node-qualifier": {
+      "patterns": [
+        {
+          "match": "(?<=:)(FIRST|NEEDS|HAS|FOR|BEFORE|AFTER|LAST|FINAL)",
+          "name": "keyword.other"
+        }
+      ]
+    },
+    "node-argument": {
+      "patterns": [
+        {
+          "begin": "\\[",
+          "end": "\\]",
+          "patterns": [
+            { "include": "#node-argument" },
+            { "include": "#number-literal" },
+            {
+              "match": "[~!@#\\*,]",
+              "name": "keyword.operator"
+            },
+            {
+              "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*",
+              "name": "variable.parameter"
+            }
+          ]
+        }
+      ]
+    },
+
+    "number-literal": {
+      "patterns": [
+        {
+          "match": "(?<=(=|,|\\-|\\(|\\[|\\s+))\\s*\\d+(\\.\\d*)?(E-?\\d+)?(?=(,|\\)|\\]|\\s+|\\s*$))",
+          "name": "constant.numeric"
+        }
+      ]
+    },
+    "guid": {
+      "patterns": [
+        {
+          "match": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+          "name": "constant.numeric"
+        }
+      ]
+    },
+    "hex-color": {
+      "patterns": [
+        {
+          "match": "(?<==)\\s*#([0-9a-fA-F]{3}){1,2}(?=\\s*$)",
+          "name": "constant.other"
+        }
+      ]
+    },
+
+    "boolean-literal": {
+      "patterns": [
+        {
+          "match": "(?<=(=|,|\\s+))\\s*([Tt]rue|[Ff]alse)(?=(,|\\s*$))",
+          "name": "constant.language"
+        }
+      ]
+    },
+
+    "i18n-string": {
+      "patterns": [
+        {
+          "match": "(?<==)\\s*#(auto)?LOC(?:(?!//).)*",
+          "name": "constant.other"
+        }
+      ]
+    },
+
+    "string-literal": {
+      "patterns": [
+        {
+          "match": "(?<==\\s*)(?:(?!//).)*[A-Za-z](?:(?!//).)",
+          "name": "string"
+        }
+      ]
+    },
+
+    "variable-expression": {
+      "patterns": [
+        {
+          "begin": "(?<==)\\s*#\\$",
+          "end": "\\$",
+          "beginCaptures": {
+            "0": {
+              "name": "string.interpolated"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "string.interpolated"
+            }
+          },
+          "patterns": [
+            { "include": "#operator" },
+            { "include": "#node-argument" },
+            {
+              "match": "/|(\\.\\.)",
+              "name": "keyword.operator"
+            },
+            {
+              "match": "(?<=/)[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*(?=\\$)",
+              "name": "variable.other"
+            },
+            { "include": "#node" }
+          ]
+        }
+      ]
+    },
+
+    "key": {
+      "patterns": [
+        {
+          "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/\\s]*?(?=(,\\d+)?\\s*[\\+\\-\\*/!]?=)",
+          "name": "variable.other"
+        }
+      ]
+    },
+    "node": {
+      "patterns": [
+        {
+          "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*",
+          "name": "entity.name.class"
+        }
+      ]
+    }
+  }
+}
