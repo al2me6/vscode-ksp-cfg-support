@@ -1,175 +1,463 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "KSP Config",
-  "scopeName": "text.ksp.cfg",
-  "fileTypes": ["cfg", "craft", "sfs"],
-  "patterns": [
-    { "include": "#block" },
-    { "include": "#comment" },
-    { "include": "#operator" },
-    { "include": "#number-literal" },
-    { "include": "#guid" },
-    { "include": "#hex-color" },
-    { "include": "#boolean-literal" },
-    { "include": "#i18n-string" },
-    { "include": "#variable-expression" },
-    { "include": "#key" },
-    { "include": "#node-qualifier" },
-    { "include": "#node" },
-    { "include": "#node-argument" },
-    { "include": "#string-literal" }
+  "scopeName": "source.ksp-cfg",
+  "fileTypes": [
+    "cfg",
+    "craft",
+    "sfs",
+    "ConfigCache"
   ],
-
-  "repository": {
-    "block": {
-      "begin": "{",
-      "end": "}",
-      "patterns": [{ "include": "$self" }]
+  "patterns": [
+    {
+      "include": "#braces"
     },
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#paste"
+    },
+    {
+      "include": "#node"
+    },
+    {
+      "include": "#key"
+    }
+  ],
+  "repository": {
     "comment": {
       "patterns": [
         {
-          "match": "//.*",
-          "name": "comment"
+          "match": "\\s*//.*",
+          "name": "comment.line"
         }
       ]
     },
-
-    "operator": {
+    "braces": {
       "patterns": [
         {
-          "match": "[@\\$~%\\?!#\\|&+\\-\\*/=]",
-          "name": "keyword.operator"
-        }
-      ]
-    },
-
-    "node-qualifier": {
-      "patterns": [
-        {
-          "match": "(?<=:)(FIRST|NEEDS|HAS|FOR|BEFORE|AFTER|LAST|FINAL)",
-          "name": "keyword.other"
-        }
-      ]
-    },
-    "node-argument": {
-      "patterns": [
-        {
-          "begin": "\\[",
-          "end": "\\]",
-          "patterns": [
-            { "include": "#node-argument" },
-            { "include": "#number-literal" },
-            {
-              "match": "[~!@#\\*,]",
-              "name": "keyword.operator"
-            },
-            {
-              "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*",
-              "name": "variable.parameter"
-            }
-          ]
-        }
-      ]
-    },
-
-    "number-literal": {
-      "patterns": [
-        {
-          "match": "(?<=(=|,|\\-|\\(|\\[|\\s+))\\s*\\d+(\\.\\d*)?(E-?\\d+)?(?=(,|\\)|\\]|\\s+|\\s*$))",
-          "name": "constant.numeric"
-        }
-      ]
-    },
-    "guid": {
-      "patterns": [
-        {
-          "match": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
-          "name": "constant.numeric"
-        }
-      ]
-    },
-    "hex-color": {
-      "patterns": [
-        {
-          "match": "(?<==)\\s*#([0-9a-fA-F]{3}){1,2}(?=\\s*$)",
-          "name": "constant.other"
-        }
-      ]
-    },
-
-    "boolean-literal": {
-      "patterns": [
-        {
-          "match": "(?<=(=|,|\\s+))\\s*([Tt]rue|[Ff]alse)(?=(,|\\s*$))",
-          "name": "constant.language"
-        }
-      ]
-    },
-
-    "i18n-string": {
-      "patterns": [
-        {
-          "match": "(?<==)\\s*#(auto)?LOC(?:(?!//).)*",
-          "name": "constant.other"
-        }
-      ]
-    },
-
-    "string-literal": {
-      "patterns": [
-        {
-          "match": "(?<==\\s*)(?:(?!//).)*[A-Za-z](?:(?!//).)",
-          "name": "string"
-        }
-      ]
-    },
-
-    "variable-expression": {
-      "patterns": [
-        {
-          "begin": "(?<==)\\s*#\\$",
-          "end": "\\$",
-          "beginCaptures": {
-            "0": {
-              "name": "string.interpolated"
-            }
-          },
-          "endCaptures": {
-            "0": {
-              "name": "string.interpolated"
+          "begin": "\\s*(\\{)",
+          "end": "\\s*(\\})",
+          "captures": {
+            "1": {
+              "name": "punctuation.brackets.curly"
             }
           },
           "patterns": [
-            { "include": "#operator" },
-            { "include": "#node-argument" },
             {
-              "match": "/|(\\.\\.)",
-              "name": "keyword.operator"
-            },
-            {
-              "match": "(?<=/)[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*(?=\\$)",
-              "name": "variable.other"
-            },
-            { "include": "#node" }
+              "include": "$self"
+            }
           ]
-        }
-      ]
-    },
-
-    "key": {
-      "patterns": [
-        {
-          "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/\\s]*?(?=(,\\d+)?\\s*[\\+\\-\\*/!]?=)",
-          "name": "variable.other"
         }
       ]
     },
     "node": {
       "patterns": [
         {
-          "match": "[A-Za-z0-9_]+[A-Za-z0-9_\\-/]*",
-          "name": "entity.name.class"
+          "match": "(?x) \\s* MM_PATCH_LOOP \\s* (?=//.*|\\{|$)\n",
+          "name": "keyword.control"
+        },
+        {
+          "match": "(?x) \\s* ([\\+\\$\\-@!%&]?) (\\w+) ([^=]+?) (?=//.*|\\{|$)\n",
+          "captures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "entity.name.class.ksp-cfg.node"
+            },
+            "3": {
+              "patterns": [
+                {
+                  "include": "#predicate"
+                },
+                {
+                  "include": "#name-index"
+                },
+                {
+                  "include": "#list-index"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "predicate": {
+      "patterns": [
+        {
+          "begin": "(:)(\\w+)(\\[)",
+          "end": "\\]",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.separator"
+            },
+            "2": {
+              "name": "keyword.other.ksp-cfg.predicate"
+            },
+            "3": {
+              "name": "punctuation.brackets"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.brackets"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#predicate"
+            },
+            {
+              "match": "[&,|]",
+              "name": "keyword.operator.ksp-cfg.predicate"
+            },
+            {
+              "include": "#name"
+            },
+            {
+              "include": "#name-index"
+            }
+          ]
+        },
+        {
+          "match": "(:)(\\w+)",
+          "captures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "keyword.other.ksp-cfg.predicate"
+            }
+          }
+        }
+      ]
+    },
+    "name": {
+      "patterns": [
+        {
+          "match": "(?<=\\[).*?/.*?(?=\\])",
+          "name": "entity.name.ksp-cfg.subdir-predicate"
+        },
+        {
+          "match": "[^@!#~][^\\[\\]\\$\\&\\,:/|]+(?=[\\[/])",
+          "name": "entity.name.class.ksp-cfg.node"
+        },
+        {
+          "match": "[@!#~]?[^\\[\\]\\$\\&\\,:/|]+",
+          "captures": {
+            "0": {
+              "patterns": [
+                {
+                  "match": "(@|!)(.+)",
+                  "captures": {
+                    "1": {
+                      "name": "keyword.operator.ksp-cfg.node-access"
+                    },
+                    "2": {
+                      "name": "entity.name.class.ksp-cfg.node"
+                    }
+                  }
+                },
+                {
+                  "match": "(#|~)(.+)",
+                  "captures": {
+                    "1": {
+                      "name": "keyword.other.ksp-cfg.key-access"
+                    },
+                    "2": {
+                      "name": "entity.name.ksp-cfg.key"
+                    }
+                  }
+                },
+                {
+                  "match": ".+",
+                  "name": "entity.name.ksp-cfg.key-or-node"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "name-index": {
+      "patterns": [
+        {
+          "begin": "(\\[)",
+          "end": "(\\])",
+          "captures": {
+            "1": {
+              "name": "punctuation.brackets"
+            }
+          },
+          "patterns": [
+            {
+              "match": "[\\*\\?]",
+              "name": "keyword.operator.ksp-cfg.wildcard"
+            },
+            {
+              "match": "[<>]",
+              "name": "keyword.operator.ksp-cfg.comparison"
+            },
+            {
+              "include": "#number-literal"
+            },
+            {
+              "include": "#boolean-literal"
+            },
+            {
+              "match": "[^\\*\\?\\]<>]*",
+              "name": "string.unquoted"
+            }
+          ]
+        }
+      ]
+    },
+    "paste": {
+      "patterns": [
+        {
+          "match": "\\s*(#)([^=]+?)(?=//.*|\\{|$)",
+          "captures": {
+            "1": {
+              "name": "keyword.operator.ksp-cfg.paste"
+            },
+            "2": {
+              "patterns": [
+                {
+                  "include": "#path-lookup"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "key": {
+      "patterns": [
+        {
+          "match": "(?x) \\s* ([\\*@%!&|]?) (.+?) \\s* ([\\*\\^\\\\+-|!]?=) \\s* (.*?) (?=//.*|}|$)\n",
+          "captures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "name": "variable.other.member",
+              "patterns": [
+                {
+                  "include": "#list-index"
+                },
+                {
+                  "include": "#predicate"
+                },
+                {
+                  "include": "#name-index"
+                },
+                {
+                  "match": "(?<=\\*).+",
+                  "captures": {
+                    "0": {
+                      "patterns": [
+                        {
+                          "include": "#path-lookup"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "3": {
+              "name": "keyword.operator"
+            },
+            "4": {
+              "patterns": [
+                {
+                  "include": "#boolean-literal"
+                },
+                {
+                  "include": "#list-literal"
+                },
+                {
+                  "include": "#number-literal"
+                },
+                {
+                  "include": "#autoloc-literal"
+                },
+                {
+                  "include": "#variable-substitution"
+                },
+                {
+                  "include": "#regex-literal"
+                },
+                {
+                  "include": "#string-literal"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "path-lookup": {
+      "patterns": [
+        {
+          "match": "(@|\\.\\.|/)",
+          "name": "keyword.control"
+        },
+        {
+          "include": "#list-index"
+        },
+        {
+          "include": "#predicate"
+        },
+        {
+          "include": "#name-index"
+        },
+        {
+          "include": "#name"
+        }
+      ]
+    },
+    "list-index": {
+      "patterns": [
+        {
+          "match": "(?x) (,) (?:\n  (\\d+)|(\\*)\n) (?:\n  (\\[)(\\d)(,)(.*?)(\\])\n)?\n",
+          "captures": {
+            "1": {
+              "name": "punctuation.accessor"
+            },
+            "2": {
+              "name": "constant.numeric"
+            },
+            "3": {
+              "name": "keyword.operator"
+            },
+            "4": {
+              "name": "punctuation.brackets"
+            },
+            "5": {
+              "name": "constant.numeric"
+            },
+            "6": {
+              "name": "punctuation.separator"
+            },
+            "7": {
+              "name": "string.unquoted"
+            },
+            "8": {
+              "name": "punctuation.brackets"
+            }
+          }
+        }
+      ]
+    },
+    "boolean-literal": {
+      "patterns": [
+        {
+          "match": "([Tt]rue|[Ff]alse)\\s*(?=//.*|}|\\]|$)",
+          "name": "constant.language"
+        }
+      ]
+    },
+    "number-literal": {
+      "patterns": [
+        {
+          "match": "(?x) -? \\d+ (\\.\\d*)? ([Ee]-?\\d+)? \\s*(?=//.*|}|\\]|$)\n",
+          "name": "constant.numeric"
+        }
+      ]
+    },
+    "list-literal": {
+      "patterns": [
+        {
+          "match": "(?x) (\n  -?\n  \\d+\n  (?:\\.\\d*)?\n  (?:[Ee]-?\\d+)?\n) ([,;]\\s*|\\s+) \\g<1> (?:\n  \\2\n  \\g<1>\n)* \\2? \\s*(?=//.*|}|\\]|$)\n",
+          "name": "constant.numeric",
+          "captures": {
+            "0": {
+              "patterns": [
+                {
+                  "match": "[,;]",
+                  "name": "punctuation.separator"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "autoloc-literal": {
+      "patterns": [
+        {
+          "match": "#(auto)?LOC.+\\s*(?=//.*|}|\\]|$)",
+          "name": "variable.other.constant.ksp-cfg.autoloc"
+        }
+      ]
+    },
+    "variable-substitution": {
+      "patterns": [
+        {
+          "match": "(#)(.+)\\s*(?=//.*|}|\\]|$)",
+          "name": "string.interpolated",
+          "captures": {
+            "1": {
+              "name": "keyword.operator"
+            },
+            "2": {
+              "patterns": [
+                {
+                  "begin": "\\$",
+                  "end": "\\$",
+                  "beginCaptures": {
+                    "0": {
+                      "name": "punctuation.section.interpolation.begin"
+                    }
+                  },
+                  "endCaptures": {
+                    "0": {
+                      "name": "punctuation.section.interpolation.end"
+                    }
+                  },
+                  "patterns": [
+                    {
+                      "include": "#path-lookup"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "regex-literal": {
+      "patterns": [
+        {
+          "match": "(:)([^:]*)(:)([^:]*)(:)\\s*(?=//.*|}|\\]|$)",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator"
+            },
+            "2": {
+              "name": "string.regexp"
+            },
+            "3": {
+              "name": "punctuation.separator"
+            },
+            "4": {
+              "name": "string.regexp"
+            },
+            "5": {
+              "name": "punctuation.separator"
+            }
+          }
+        }
+      ]
+    },
+    "string-literal": {
+      "patterns": [
+        {
+          "match": ".*",
+          "name": "string.unquoted"
         }
       ]
     }

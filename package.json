@@ -2,7 +2,7 @@
   "name": "ksp-cfg-support",
   "displayName": "KSP CFG Support",
   "description": "Syntax highlighting for Kerbal Space Program config files",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "al2me6",
   "engines": {
     "vscode": "^1.33.0"
@@ -36,7 +36,8 @@
         "extensions": [
           ".cfg",
           ".craft",
-          ".sfs"
+          ".sfs",
+          ".ConfigCache"
         ],
         "configuration": "./language-configuration.json"
       }
@@ -48,7 +49,7 @@
           "KSP Config",
           "ksp-cfg"
         ],
-        "scopeName": "text.ksp.cfg",
+        "scopeName": "source.ksp-cfg",
         "path": "./syntaxes/ksp-cfg.tmLanguage.json"
       }
     ]

@@ -9,9 +9,11 @@
             "name": "Extension",
             "type": "extensionHost",
             "request": "launch",
+            "preLaunchTask": "Regenerate json",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "${workspaceFolder}/examples/example.cfg"
             ]
         }
     ]

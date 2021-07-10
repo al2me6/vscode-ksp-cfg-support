@@ -1,0 +1,316 @@
+# yaml-language-server: $schema=tmLanguage.schema.json
+
+name: KSP Config
+scopeName: source.ksp-cfg
+fileTypes:
+  - cfg
+  - craft
+  - sfs
+  - ConfigCache
+
+patterns:
+  - include: '#braces'
+  - include: '#comment'
+  - include: '#paste'
+  - include: '#node'
+  - include: '#key'
+
+repository:
+  comment:
+    patterns:
+      - match: \s*//.*
+        name: comment.line
+
+  braces:
+   patterns:
+    - begin: '\s*(\{)'
+      end: '\s*(\})'
+      captures:
+        1:
+          name: punctuation.brackets.curly
+      patterns:
+        - include: $self
+
+  node:
+    patterns:
+      - match: >
+          (?x)
+          \s*
+          MM_PATCH_LOOP
+          \s*
+          (?=//.*|\{|$)
+        name: keyword.control
+      - match: >
+          (?x)
+          \s*
+          ([\+\$\-@!%&]?)
+          (\w+)
+          ([^=]+?)
+          (?=//.*|\{|$)
+        captures:
+          1:
+            name: keyword.operator
+          2:
+            name: entity.name.class.ksp-cfg.node
+          3:
+            patterns:
+              - include: '#predicate'
+              - include: '#name-index'
+              - include: '#list-index'
+
+  predicate:
+   patterns:
+    - begin: (:)(\w+)(\[)
+      end: \]
+      beginCaptures:
+        1:
+          name: punctuation.separator
+        2:
+          name: keyword.other.ksp-cfg.predicate
+        3:
+          name: punctuation.brackets
+      endCaptures:
+        0:
+          name: punctuation.brackets
+      patterns:
+        - include: '#predicate'
+        - match: '[&,|]'
+          name: keyword.operator.ksp-cfg.predicate
+        - include: '#name'
+        - include: '#name-index'
+    - match: (:)(\w+)
+      captures:
+        1:
+          name: keyword.operator
+        2:
+          name: keyword.other.ksp-cfg.predicate
+
+  name:
+    patterns:
+      - match: '(?<=\[).*?/.*?(?=\])'
+        name: entity.name.ksp-cfg.subdir-predicate
+      - match: '[^@!#~][^\[\]\$\&\,:/|]+(?=[\[/])'
+        name: entity.name.class.ksp-cfg.node
+      - match: '[@!#~]?[^\[\]\$\&\,:/|]+'
+        captures:
+          0:
+            patterns:
+              - match: (@|!)(.+)
+                captures:
+                  1:
+                    name: keyword.operator.ksp-cfg.node-access
+                  2:
+                    name: entity.name.class.ksp-cfg.node
+              - match: (#|~)(.+)
+                captures:
+                  1:
+                    name: keyword.other.ksp-cfg.key-access
+                  2:
+                    name: entity.name.ksp-cfg.key
+              - match: .+
+                name: entity.name.ksp-cfg.key-or-node
+
+  name-index:
+    patterns:
+      - begin: (\[)
+        end: (\])
+        captures:
+          1:
+            name: punctuation.brackets
+        patterns:
+          - match: '[\*\?]'
+            name: keyword.operator.ksp-cfg.wildcard
+          - match: '[<>]'
+            name: keyword.operator.ksp-cfg.comparison
+          - include: '#number-literal'
+          - include: '#boolean-literal'
+          - match: '[^\*\?\]<>]*'
+            name: string.unquoted
+
+  paste:
+    patterns:
+      - match: \s*(#)([^=]+?)(?=//.*|\{|$)
+        captures:
+          1:
+            name: keyword.operator.ksp-cfg.paste
+          2:
+            patterns:
+              - include: '#path-lookup'
+
+  key:
+    patterns:
+      - match: >
+          (?x)
+          \s*
+          ([\*@%!&|]?)
+          (.+?)
+          \s*
+          ([\*\^\\+-|!]?=)
+          \s*
+          (.*?)
+          (?=//.*|}|$)
+        # Ignore spaces (inserted by multiline literal)
+        # Spaces, if any
+        # Key access modifier
+        # Key access
+        # Optional whitespace
+        # Equal sign with optional operator
+        # Optional whitespace
+        # Value
+        # Ending lookahead (either comment, closing brace, or end of line)
+        captures:
+          1:
+            name: keyword.operator
+          2:
+            name: variable.other.member
+            patterns:
+            - include: '#list-index'
+            - include: '#predicate'
+            - include: '#name-index'
+            - match: (?<=\*).+
+              captures:
+                0:
+                  patterns:
+                  - include: '#path-lookup'
+          3:
+            name: keyword.operator
+          4:
+            patterns:
+              - include: '#boolean-literal'
+              - include: '#list-literal'
+              - include: '#number-literal'
+              - include: '#autoloc-literal'
+              - include: '#variable-substitution'
+              - include: '#regex-literal'
+              - include: '#string-literal'
+
+  path-lookup:
+   patterns:
+    - match: '(@|\.\.|/)'
+      name: keyword.control
+    - include: '#list-index'
+    - include: '#predicate'
+    - include: '#name-index'
+    - include: '#name'
+
+  list-index:
+    patterns:
+      - match: >
+          (?x)
+          (,)
+          (?:
+            (\d+)|(\*)
+          )
+          (?:
+            (\[)(\d)(,)(.*?)(\])
+          )?
+        captures:
+          1:
+            name: punctuation.accessor
+          2:
+            name: constant.numeric
+          3:
+            name: keyword.operator
+          4:
+            name: punctuation.brackets
+          5:
+            name: constant.numeric
+          6:
+            name: punctuation.separator
+          7:
+            name: string.unquoted
+          8:
+            name: punctuation.brackets
+
+  boolean-literal:
+    patterns:
+      - match: ([Tt]rue|[Ff]alse)\s*(?=//.*|}|\]|$)
+        name: constant.language
+
+  number-literal:
+    patterns:
+    - match: >
+        (?x)
+        -?
+        \d+
+        (\.\d*)?
+        ([Ee]-?\d+)?
+        \s*(?=//.*|}|\]|$)
+      name: constant.numeric
+
+  list-literal:
+    patterns:
+    - match: >
+        (?x)
+        (
+          -?
+          \d+
+          (?:\.\d*)?
+          (?:[Ee]-?\d+)?
+        )
+        ([,;]\s*|\s+)
+        \g<1>
+        (?:
+          \2
+          \g<1>
+        )*
+        \2?
+        \s*(?=//.*|}|\]|$)
+      # Ignore spaces
+      # A number
+      # A separator: either spaces, or a comma or semicolon followed by optional spaces
+      # Another number
+      # Repeat of *the same* separator, followed by a number
+      # An optional separator
+      # Ending
+      name: constant.numeric
+      captures:
+        0:
+          patterns:
+            - match: '[,;]'
+              name: punctuation.separator
+
+  autoloc-literal:
+    patterns:
+      - match: '#(auto)?LOC.+\s*(?=//.*|}|\]|$)'
+        name: variable.other.constant.ksp-cfg.autoloc
+
+  variable-substitution:
+    patterns:
+      - match: (#)(.+)\s*(?=//.*|}|\]|$)
+        name: string.interpolated
+        captures:
+          1:
+            name: keyword.operator
+          2:
+            patterns:
+              - begin: '\$'
+                end: '\$'
+                beginCaptures:
+                  0:
+                    name: punctuation.section.interpolation.begin
+                endCaptures:
+                  0:
+                    name: punctuation.section.interpolation.end
+                patterns:
+                  - include: '#path-lookup'
+
+  regex-literal:
+    patterns:
+      - match: '(:)([^:]*)(:)([^:]*)(:)\s*(?=//.*|}|\]|$)'
+        captures:
+          1:
+            name: punctuation.separator
+          2:
+            name: string.regexp
+          3:
+            name: punctuation.separator
+          4:
+            name: string.regexp
+          5:
+            name: punctuation.separator
+
+  string-literal:
+    patterns:
+    - match: .*
+      name: string.unquoted
