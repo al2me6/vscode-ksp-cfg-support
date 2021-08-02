@@ -58,7 +58,7 @@
           "name": "keyword.control"
         },
         {
-          "match": "(?x) \\s* ([\\+\\$\\-@!%&]?) (\\w+) ([^=]+?) (?=//.*|\\{|$)\n",
+          "match": "(?x) \\s* ([\\+\\$\\-@!%&]?) ([\\w\\-]+) ([^=]+?) (?=//.*|\\{|$)\n",
           "captures": {
             "1": {
               "name": "keyword.operator"
@@ -136,8 +136,25 @@
     "name": {
       "patterns": [
         {
-          "match": "(?<=\\[).*?/.*?(?=\\])",
-          "name": "entity.name.ksp-cfg.subdir-predicate"
+          "match": "(?<=NEEDS\\[)([^\\]]*)",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "match": "[\\|\\&,!]",
+                  "name": "keyword.operator.ksp-cfg.predicate"
+                },
+                {
+                  "match": "/",
+                  "name": "punctuation.separator.ksp-cfg.subdir-match-separator"
+                },
+                {
+                  "match": "[^\\|\\&/,!]*",
+                  "name": "entity.name.ksp-cfg.pass-or-path"
+                }
+              ]
+            }
+          }
         },
         {
           "match": "[^@!#~][^\\[\\]\\$\\&\\,:/|]+(?=[\\[/])",
@@ -192,7 +209,7 @@
           },
           "patterns": [
             {
-              "match": "[\\*\\?]",
+              "match": "[\\*\\?\\|]",
               "name": "keyword.operator.ksp-cfg.wildcard"
             },
             {
@@ -206,7 +223,7 @@
               "include": "#boolean-literal"
             },
             {
-              "match": "[^\\*\\?\\]<>]*",
+              "match": "[^\\*\\?\\|\\]<>]*",
               "name": "string.unquoted"
             }
           ]
@@ -250,9 +267,6 @@
                   "include": "#predicate"
                 },
                 {
-                  "include": "#name-index"
-                },
-                {
                   "match": "(?<=\\*).+",
                   "captures": {
                     "0": {
@@ -281,10 +295,7 @@
                   "include": "#number-literal"
                 },
                 {
-                  "include": "#autoloc-literal"
-                },
-                {
-                  "include": "#variable-substitution"
+                  "include": "#variable-substitution-or-autoloc-literal"
                 },
                 {
                   "include": "#regex-literal"
@@ -321,7 +332,7 @@
     "list-index": {
       "patterns": [
         {
-          "match": "(?x) (,) (?:\n  (\\d+)|(\\*)\n) (?:\n  (\\[)(\\d)(,)(.*?)(\\])\n)?\n",
+          "match": "(?x) (,) (?:\n  (\\d+)|(\\*)\n)\n",
           "captures": {
             "1": {
               "name": "punctuation.accessor"
@@ -331,20 +342,37 @@
             },
             "3": {
               "name": "keyword.operator"
-            },
-            "4": {
+            }
+          }
+        },
+        {
+          "match": "(?x) (\\[)\n  (?:\n    (?:(\\d+)|(\\*))\n    (,)\n  )?\n  (.*?)\n(\\])\n",
+          "captures": {
+            "1": {
               "name": "punctuation.brackets"
             },
-            "5": {
+            "2": {
               "name": "constant.numeric"
             },
-            "6": {
+            "3": {
+              "name": "keyword.operator"
+            },
+            "4": {
               "name": "punctuation.separator"
             },
-            "7": {
-              "name": "string.unquoted"
+            "5": {
+              "patterns": [
+                {
+                  "match": "\\*",
+                  "name": "keyword.operator"
+                },
+                {
+                  "match": "[^\\*]+",
+                  "name": "string.unquoted"
+                }
+              ]
             },
-            "8": {
+            "6": {
               "name": "punctuation.brackets"
             }
           }
@@ -362,7 +390,7 @@
     "number-literal": {
       "patterns": [
         {
-          "match": "(?x) -? \\d+ (\\.\\d*)? ([Ee]-?\\d+)? \\s*(?=//.*|}|\\]|$)\n",
+          "match": "(?x) -? \\d+ (\\.\\d*)? ([Ee][\\+\\-]?\\d+)? \\s*(?=//.*|}|\\]|$)\n",
           "name": "constant.numeric"
         }
       ]
@@ -370,7 +398,7 @@
     "list-literal": {
       "patterns": [
         {
-          "match": "(?x) (\n  -?\n  \\d+\n  (?:\\.\\d*)?\n  (?:[Ee]-?\\d+)?\n) ([,;]\\s*|\\s+) \\g<1> (?:\n  \\2\n  \\g<1>\n)* \\2? \\s*(?=//.*|}|\\]|$)\n",
+          "match": "(?x) (\n  -?\n  \\d+\n  (?:\\.\\d*)?\n  (?:[Ee][\\+\\-]?\\d+)?\n) ([,;]\\s*|\\s+) \\g<1> (?:\n  \\2\n  \\g<1>\n)* \\2? \\s*(?=//.*|}|\\]|$)\n",
           "name": "constant.numeric",
           "captures": {
             "0": {
@@ -385,18 +413,10 @@
         }
       ]
     },
-    "autoloc-literal": {
+    "variable-substitution-or-autoloc-literal": {
       "patterns": [
         {
-          "match": "#(auto)?LOC.+\\s*(?=//.*|}|\\]|$)",
-          "name": "variable.other.constant.ksp-cfg.autoloc"
-        }
-      ]
-    },
-    "variable-substitution": {
-      "patterns": [
-        {
-          "match": "(#)(.+)\\s*(?=//.*|}|\\]|$)",
+          "match": "(#)(?=.*\\$)(.+)\\s*(?=//.*|}|\\]|$)",
           "name": "string.interpolated",
           "captures": {
             "1": {
@@ -426,6 +446,10 @@
               ]
             }
           }
+        },
+        {
+          "match": "#.*(?=//.*|}|\\]|$)",
+          "name": "variable.other.constant.ksp-cfg.autoloc"
         }
       ]
     },

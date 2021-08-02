@@ -44,7 +44,7 @@ repository:
           (?x)
           \s*
           ([\+\$\-@!%&]?)
-          (\w+)
+          ([\w\-]+)
           ([^=]+?)
           (?=//.*|\{|$)
         captures:
@@ -87,8 +87,16 @@ repository:
 
   name:
     patterns:
-      - match: '(?<=\[).*?/.*?(?=\])'
-        name: entity.name.ksp-cfg.subdir-predicate
+      - match: (?<=NEEDS\[)([^\]]*)
+        captures:
+          1:
+            patterns:
+              - match: '[\|\&,!]'
+                name: keyword.operator.ksp-cfg.predicate
+              - match: /
+                name: punctuation.separator.ksp-cfg.subdir-match-separator
+              - match: '[^\|\&/,!]*'
+                name: entity.name.ksp-cfg.pass-or-path
       - match: '[^@!#~][^\[\]\$\&\,:/|]+(?=[\[/])'
         name: entity.name.class.ksp-cfg.node
       - match: '[@!#~]?[^\[\]\$\&\,:/|]+'
@@ -118,13 +126,13 @@ repository:
           1:
             name: punctuation.brackets
         patterns:
-          - match: '[\*\?]'
+          - match: '[\*\?\|]'
             name: keyword.operator.ksp-cfg.wildcard
           - match: '[<>]'
             name: keyword.operator.ksp-cfg.comparison
           - include: '#number-literal'
           - include: '#boolean-literal'
-          - match: '[^\*\?\]<>]*'
+          - match: '[^\*\?\|\]<>]*'
             name: string.unquoted
 
   paste:
@@ -149,7 +157,7 @@ repository:
           \s*
           (.*?)
           (?=//.*|}|$)
-        # Ignore spaces (inserted by multiline literal)
+        # Ignore spaces in regex (inserted by multiline literal)
         # Spaces, if any
         # Key access modifier
         # Key access
@@ -166,7 +174,6 @@ repository:
             patterns:
             - include: '#list-index'
             - include: '#predicate'
-            - include: '#name-index'
             - match: (?<=\*).+
               captures:
                 0:
@@ -179,8 +186,7 @@ repository:
               - include: '#boolean-literal'
               - include: '#list-literal'
               - include: '#number-literal'
-              - include: '#autoloc-literal'
-              - include: '#variable-substitution'
+              - include: '#variable-substitution-or-autoloc-literal'
               - include: '#regex-literal'
               - include: '#string-literal'
 
@@ -201,9 +207,6 @@ repository:
           (?:
             (\d+)|(\*)
           )
-          (?:
-            (\[)(\d)(,)(.*?)(\])
-          )?
         captures:
           1:
             name: punctuation.accessor
@@ -211,15 +214,31 @@ repository:
             name: constant.numeric
           3:
             name: keyword.operator
-          4:
+      - match: >
+          (?x)
+          (\[)
+            (?:
+              (?:(\d+)|(\*))
+              (,)
+            )?
+            (.*?)
+          (\])
+        captures:
+          1:
             name: punctuation.brackets
-          5:
+          2:
             name: constant.numeric
-          6:
+          3:
+            name: keyword.operator
+          4:
             name: punctuation.separator
-          7:
-            name: string.unquoted
-          8:
+          5:
+            patterns:
+              - match: '\*'
+                name: keyword.operator
+              - match: '[^\*]+'
+                name: string.unquoted
+          6:
             name: punctuation.brackets
 
   boolean-literal:
@@ -234,7 +253,7 @@ repository:
         -?
         \d+
         (\.\d*)?
-        ([Ee]-?\d+)?
+        ([Ee][\+\-]?\d+)?
         \s*(?=//.*|}|\]|$)
       name: constant.numeric
 
@@ -246,7 +265,7 @@ repository:
           -?
           \d+
           (?:\.\d*)?
-          (?:[Ee]-?\d+)?
+          (?:[Ee][\+\-]?\d+)?
         )
         ([,;]\s*|\s+)
         \g<1>
@@ -270,14 +289,9 @@ repository:
             - match: '[,;]'
               name: punctuation.separator
 
-  autoloc-literal:
+  variable-substitution-or-autoloc-literal:
     patterns:
-      - match: '#(auto)?LOC.+\s*(?=//.*|}|\]|$)'
-        name: variable.other.constant.ksp-cfg.autoloc
-
-  variable-substitution:
-    patterns:
-      - match: (#)(.+)\s*(?=//.*|}|\]|$)
+      - match: (#)(?=.*\$)(.+)\s*(?=//.*|}|\]|$)
         name: string.interpolated
         captures:
           1:
@@ -294,6 +308,8 @@ repository:
                     name: punctuation.section.interpolation.end
                 patterns:
                   - include: '#path-lookup'
+      - match: '#.*(?=//.*|}|\]|$)'
+        name: variable.other.constant.ksp-cfg.autoloc
 
   regex-literal:
     patterns:
